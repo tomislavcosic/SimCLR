@@ -6,7 +6,7 @@ import torchvision.transforms as transforms
 import numpy as np
 
 from simclr import SimCLR
-from simclr.modules import LogisticRegression, get_resnet
+from simclr.modules import SimpleFCClassifier, get_resnet
 from simclr.modules.transformations import TransformsSimCLR
 
 from utils import yaml_config_hook
@@ -175,7 +175,7 @@ if __name__ == "__main__":
 
     ## Logistic Regression
     n_classes = 10  # CIFAR-10 / STL-10
-    model = LogisticRegression(simclr_model.n_features, n_classes)
+    model = SimpleFCClassifier(simclr_model.n_features, n_classes)
     model = model.to(args.device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
