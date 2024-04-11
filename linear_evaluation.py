@@ -1,3 +1,4 @@
+import math
 import os
 import argparse
 import torch
@@ -8,6 +9,7 @@ import numpy as np
 from simclr import SimCLR
 from simclr.modules import SimpleFCClassifier, get_resnet
 from simclr.modules.transformations import TransformsSimCLR
+from model import save_model
 
 from utils import yaml_config_hook
 
@@ -62,6 +64,7 @@ def create_data_loaders_from_arrays(X_train, y_train, X_test, y_test, batch_size
 def train(args, loader, simclr_model, model, criterion, optimizer):
     loss_epoch = 0
     accuracy_epoch = 0
+    model.train()
     for step, (x, y) in enumerate(loader):
         optimizer.zero_grad()
 
@@ -190,6 +193,9 @@ if __name__ == "__main__":
         train_X, train_y, test_X, test_y, args.logistic_batch_size
     )
 
+    best_loss = math.inf
+    best_model_params = None
+
     for epoch in range(args.logistic_epochs):
         loss_epoch, accuracy_epoch = train(
             args, arr_train_loader, simclr_model, model, criterion, optimizer
@@ -198,6 +204,18 @@ if __name__ == "__main__":
             f"Epoch [{epoch}/{args.logistic_epochs}]\t Loss: {loss_epoch / len(arr_train_loader)}\t Accuracy: {accuracy_epoch / len(arr_train_loader)}"
         )
 
+        if epoch % 10 == 0:
+            loss_epoch, accuracy_epoch = test(
+                args, arr_test_loader, simclr_model, model, criterion, optimizer
+            )
+            print(
+                f"[TEST]\t Loss: {loss_epoch / len(arr_test_loader)}\t Accuracy: {accuracy_epoch / len(arr_test_loader)}"
+            )
+            if loss_epoch < best_loss:
+                best_model_params = model.state_dict()
+                print(f"[NEW BEST]\t Loss: {loss_epoch / len(arr_test_loader)}\t Accuracy: {accuracy_epoch / len(arr_test_loader)}")
+
+
     # final testing
     loss_epoch, accuracy_epoch = test(
         args, arr_test_loader, simclr_model, model, criterion, optimizer
@@ -205,3 +223,5 @@ if __name__ == "__main__":
     print(
         f"[FINAL]\t Loss: {loss_epoch / len(arr_test_loader)}\t Accuracy: {accuracy_epoch / len(arr_test_loader)}"
     )
+
+    save_model(args, model, optimizer)
