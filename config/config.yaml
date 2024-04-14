@@ -36,3 +36,6 @@ logistic_epochs: 500
 # PCA options
 pca_image_output_path: ""
 pca_image_output_name: "pca_result.png"
+
+#Simple Normalizing Flow options
+simple_nf_epochs: 20
