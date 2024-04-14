@@ -29,7 +29,7 @@ def inference(loader, simclr_model, device):
         feature_vector.extend(h.cpu().detach().numpy())
         labels_vector.extend(y.numpy())
 
-        if step % 1 == 0:
+        if step % 10 == 0:
             print(f"Step [{step}/{len(loader)}]\t Computing features...")
 
     feature_vector = np.array(feature_vector)
