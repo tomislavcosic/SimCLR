@@ -126,6 +126,7 @@ if __name__ == '__main__':
     )
 
     flow = SimpleNF(2, num_steps=7)
+    flow.to(args.device)
     optim = torch.optim.SGD(flow.parameters(), lr=1e-1)
 
     for epoch in range(args.simple_nf_epochs):
