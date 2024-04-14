@@ -1,4 +1,4 @@
-from SimpleNormFlow.bijection import _Bijection
+from bijection import _Bijection
 import torch.nn as nn
 import torch
 
