@@ -39,3 +39,4 @@ pca_image_output_name: "pca_result.png"
 
 #Simple Normalizing Flow options
 simple_nf_epochs: 20
+simple_nf_batch_size: 64
