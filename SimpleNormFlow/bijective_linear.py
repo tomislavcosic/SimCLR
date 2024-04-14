@@ -9,10 +9,11 @@ def sum_except_batch(x, num_dims=1):
 
 class BijectiveLinear(_Bijection):
     def __init__(self, dim):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         super(_Bijection, self).__init__()
         self.dim = dim
-        self.weight = nn.Parameter(torch.eye(dim)) # DxD
-        self.bias = nn.Parameter(torch.zeros(1, dim)) # 1xD
+        self.weight = nn.Parameter(torch.eye(dim)).to(device) # DxD
+        self.bias = nn.Parameter(torch.zeros(1, dim)).to(device) # 1xD
 
     def forward(self, x):   # x has shape NxD
         # ...
