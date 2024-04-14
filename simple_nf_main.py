@@ -61,10 +61,10 @@ if __name__ == '__main__':
     args.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-    train_X = torch.load(os.path.join(args.features_save_path, "train_X.pt"))
-    train_y = torch.load(os.path.join(args.features_save_path, "train_y.pt"))
-    test_X = torch.load(os.path.join(args.features_save_path, "test_X.pt"))
-    test_y = torch.load(os.path.join(args.features_save_path, "test_y.pt"))
+    train_X = torch.load(os.path.join(args.feature_save_path, "train_X.pt"))
+    train_y = torch.load(os.path.join(args.feature_save_path, "train_y.pt"))
+    test_X = torch.load(os.path.join(args.feature_save_path, "test_X.pt"))
+    test_y = torch.load(os.path.join(args.feature_save_path, "test_y.pt"))
 
     arr_train_loader, arr_test_loader = create_data_loaders_from_arrays(
         train_X, train_y, test_X, test_y, args.logistic_batch_size
