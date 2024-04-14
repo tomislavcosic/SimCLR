@@ -7,7 +7,7 @@ class NormalizingFlow(nn.Module):
     Base class for normalizing flow.
     """
 
-    def __init__(self, transforms, input_dim, device="cpu"):
+    def __init__(self, transforms, input_dim, device="cuda"):
         super(NormalizingFlow, self).__init__()
         self.transforms = transforms  # has to be of type nn.Sequential.
 
@@ -72,7 +72,7 @@ class NormalizingFlow(nn.Module):
         """
         z, log_abs_det = self.forward_and_log_det(x)
         log_pz = torch.sum(self.base_dist.log_prob(z), axis=1)
-        log_px = log_pz + log_abs_det
+        log_px = log_pz.to("cuda") + log_abs_det
         return log_px
 
     def sample(self, num_samples, T=1):
