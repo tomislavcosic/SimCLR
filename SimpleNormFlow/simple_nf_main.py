@@ -1,7 +1,7 @@
 import argparse
 import os
 
-from .simple_nf import SimpleNF
+from simple_nf import SimpleNF
 import torch
 import torchvision
 
