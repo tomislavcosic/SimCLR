@@ -32,3 +32,7 @@ reload: False
 # logistic regression options
 logistic_batch_size: 256
 logistic_epochs: 500
+
+# PCA options
+pca_image_output_path: ""
+pca_image_output_name: "pca_result.png"

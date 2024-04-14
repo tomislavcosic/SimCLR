@@ -29,7 +29,7 @@ def inference(loader, simclr_model, device):
         feature_vector.extend(h.cpu().detach().numpy())
         labels_vector.extend(y.numpy())
 
-        if step % 20 == 0:
+        if step % 1 == 0:
             print(f"Step [{step}/{len(loader)}]\t Computing features...")
 
     feature_vector = np.array(feature_vector)
@@ -42,6 +42,10 @@ def get_features(simclr_model, train_loader, test_loader, device):
     train_X, train_y = inference(train_loader, simclr_model, device)
     test_X, test_y = inference(test_loader, simclr_model, device)
     return train_X, train_y, test_X, test_y
+
+def get_features_single_loader(simclr_model, loader, device):
+    X, y = inference(loader, simclr_model, device)
+    return X, y
 
 
 def create_data_loaders_from_arrays(X_train, y_train, X_test, y_test, batch_size):
