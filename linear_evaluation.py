@@ -214,7 +214,7 @@ if __name__ == "__main__":
             if loss_epoch < best_loss:
                 best_model_params = model.state_dict()
                 print(f"[NEW BEST]\t Loss: {loss_epoch / len(arr_test_loader)}\t Accuracy: {accuracy_epoch / len(arr_test_loader)}")
-
+                best_loss = loss_epoch
 
     # final testing
     loss_epoch, accuracy_epoch = test(
