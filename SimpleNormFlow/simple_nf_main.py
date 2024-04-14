@@ -1,7 +1,7 @@
 import argparse
 import os
 
-from SimpleNormFlow.simple_nf import SimpleNF
+from .simple_nf import SimpleNF
 import torch
 import torchvision
 
