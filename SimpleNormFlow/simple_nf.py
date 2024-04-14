@@ -1,7 +1,7 @@
 import torch.nn as nn
 
-from bijective_linear import BijectiveLinear
-from normalizing_flow import NormalizingFlow
+from .bijective_linear import BijectiveLinear
+from .normalizing_flow import NormalizingFlow
 
 
 class SimpleNF(NormalizingFlow):
