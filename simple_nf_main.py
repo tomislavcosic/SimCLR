@@ -125,7 +125,7 @@ if __name__ == '__main__':
         train_X, train_y, test_X, test_y, args.logistic_batch_size
     )
 
-    flow = SimpleNF(2, num_steps=7)
+    flow = SimpleNF(512, num_steps=7)
     flow.to(args.device)
     optim = torch.optim.SGD(flow.parameters(), lr=1e-1)
 
