@@ -29,6 +29,7 @@ class BijectiveLinear(_Bijection):
         return x    # NxD
 
     def regularization(self):
-        return ((self.weight @ self.weight) - torch.eye(self.dim)).abs().sum()
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        return ((self.weight @ self.weight) - torch.eye(self.dim, device=device)).abs().sum()
 
 
