@@ -1,5 +1,6 @@
 import argparse
 import os
+import numpy as np
 
 from SimpleNormFlow.simple_nf import SimpleNF
 import torch
@@ -19,12 +20,12 @@ def train(args, loader, model, optimizer):
         log_px = model.log_prob(x)
         loss = - log_px.mean()
         loss_reg = model.gather_regularization()
-        total_loss = loss + 0.001 * loss_reg
+        total_loss = loss + 0.01 * loss_reg
         total_loss.backward()
         loss_epoch += total_loss
         optim.step()
         if step % 20 == 0:
-            print(f"Iter {step + 1}: Loss:{total_loss.item()/args.simple_nf_batch_size} Reg:{loss_reg.item()}")
+            print(f"Iter {step + 1}: Loss:{total_loss.item()} Reg:{loss_reg.item()}")
 
     return loss_epoch
 
@@ -39,11 +40,10 @@ def test(args, loader, model):
         log_px = model.log_prob(x)
         loss = - log_px.mean()
         loss_reg = model.gather_regularization()
-        total_loss = loss + 0.001 * loss_reg
-        total_loss.backward()
+        total_loss = loss + 0.01 * loss_reg
 
         if step % 20 == 0:
-            print(f"Iter {step + 1}: Loss:{total_loss.item()/args.simple_nf_batch_size} Reg:{loss_reg.item()}")
+            print(f"Iter {step + 1}: Loss:{total_loss.item()} Reg:{loss_reg.item()}")
 
         loss_epoch += total_loss
 
@@ -66,20 +66,32 @@ if __name__ == '__main__':
     test_X = torch.load(os.path.join(args.feature_save_path, "test_X.pt"))
     test_y = torch.load(os.path.join(args.feature_save_path, "test_y.pt"))
 
+    print(max(train_X[0]), min(train_X[0]))
     arr_train_loader, arr_test_loader = create_data_loaders_from_arrays(
         train_X, train_y, test_X, test_y, args.logistic_batch_size
     )
 
-    flow = SimpleNF(512, num_steps=2)
+    flow = SimpleNF(512, num_steps=7)
     flow.to(args.device)
-    optim = torch.optim.SGD(flow.parameters(), lr=1e-1)
+    optim = torch.optim.SGD(flow.parameters(), lr=1e-4)
 
     for epoch in range(args.simple_nf_epochs):
         loss = train(args, arr_train_loader, flow, optim)
         if epoch % 1 == 0:
-            print(f"Epoch {epoch + 1}: Loss: {loss/args.simple_nf_batch_size}")
+            print(f"Epoch {epoch + 1}: Loss: {loss/len(train_y)}")
 
     test_loss = test(args, arr_test_loader, flow)
-    print(f"[Test] Loss: {test_loss}")
+    print(f"[Test] Loss: {test_loss/len(test_y)}")
 
+    # Get bits per dim
+    n = 0
+    bpd_cum = 0
+    with torch.no_grad():
+        for step, (x, y) in enumerate(arr_test_loader):
+            x = x.to(args.device)
+            nll = - flow.log_prob(x)
+            nll_np = nll.cpu().numpy()
+            bpd_cum += np.nansum((nll_np / x.shape[1]) / np.log(2))
+            n += len(x) - np.sum(np.isnan(nll_np))
 
+        print('Bits per dim: ', bpd_cum / n)
