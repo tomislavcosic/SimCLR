@@ -183,8 +183,8 @@ if __name__ == "__main__":
     ## Logistic Regression
     n_classes = 10  # CIFAR-10 / STL-10
     model = SimpleFCClassifier(simclr_model.n_features, n_classes)
+    model.load_state_dict(torch.load(os.path.join(args.model_path, "classifier_weights.tar"), args.device.type))
     model = model.to(args.device)
-    model.load_state_dict(torch.load(os.path.join(args.model_path, "classifier_weights.pt"), args.device.type))
 
     optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
     criterion = torch.nn.CrossEntropyLoss()
