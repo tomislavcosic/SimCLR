@@ -16,11 +16,8 @@ class BijectiveLinear(_Bijection):
         self.bias = nn.Parameter(torch.zeros(1, dim, device=device)) # 1xD
 
     def forward(self, x):   # x has shape NxD
-        # ...
-        N = x.shape[0]
-
-        z = x @ self.weight.T + self.bias
-        log_abs_det = torch.log(torch.abs(torch.linalg.det(self.weight))).repeat(N)
+        z = x @ self.weight.t() + self.bias
+        log_abs_det = sum_except_batch(torch.slogdet(self.weight)[1])
         return z, log_abs_det # shapes NxD, N
 
     def inverse(self, z):
