@@ -16,6 +16,7 @@ def train(args, loader, model, optimizer):
         optimizer.zero_grad()
 
         x = x.to(args.device)
+        y = y.to(args.device)
 
         log_px = model.log_prob(x, y)
         loss = - log_px.mean()
@@ -36,6 +37,7 @@ def test(args, loader, model):
         model.zero_grad()
 
         x = x.to(args.device)
+        y = y.to(args.device)
 
         log_px = model.log_prob(x, y)
         loss = - log_px.mean()
@@ -89,6 +91,7 @@ if __name__ == '__main__':
     with torch.no_grad():
         for step, (x, y) in enumerate(arr_test_loader):
             x = x.to(args.device)
+            y = y.to(args.device)
             nll = - flow.log_prob(x, y)
             nll_np = nll.cpu().numpy()
             bpd_cum += np.nansum((nll_np / x.shape[1]) / np.log(2))
