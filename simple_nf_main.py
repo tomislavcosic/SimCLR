@@ -1,6 +1,5 @@
 import argparse
 import os
-import normflows as nf
 import numpy as np
 
 from SimpleNormFlow.simple_nf import SimpleNF
@@ -87,4 +86,15 @@ if __name__ == '__main__':
     print(f"[Test] Loss: {test_loss/len(test_y)}")
 
     # Get bits per dim
-    print(f"Test BPD: {nf.utils.bitsPerDimDataset(flow, arr_test_loader)}")
+    n = 0
+    bpd_cum = 0
+    with torch.no_grad():
+        for step, (x, y) in enumerate(arr_test_loader):
+            x = x.to(args.device)
+            y = y.to(args.device)
+            nll = - flow.log_prob(x, y)
+            nll_np = nll.cpu().numpy()
+            bpd_cum += np.nansum((nll_np / x.shape[1]) / np.log(2))
+            n += len(x) - np.sum(np.isnan(nll_np))
+
+        print('Bits per dim: ', bpd_cum / n)
