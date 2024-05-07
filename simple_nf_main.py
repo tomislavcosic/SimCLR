@@ -6,20 +6,35 @@ from SimpleNormFlow.simple_nf import SimpleNF
 import torch
 
 from linear_evaluation import create_data_loaders_from_arrays
+from simclr.modules import SimpleFCClassifier
 from utils import yaml_config_hook
 
 
 def train(args, loader, model, optimizer):
     loss_epoch = 0
     model.train()
+    if args.simple_nf_loss == "hybrid":
+        classifier = SimpleFCClassifier(512, 10)
+        classifier.load_state_dict(torch.load(os.path.join(args.model_path, "classifier_weights.tar"), args.device.type))
+        classifier = classifier.to(args.device)
+        classifier.eval()
     for step, (x, y) in enumerate(loader):
         optimizer.zero_grad()
 
         x = x.to(args.device)
         y = y.to(args.device)
 
-        log_px = model.log_prob(x, y)
-        loss = - log_px.mean()
+        if args.simple_nf_loss == "hybrid":
+            p_x, p_xcs = model.hybrid_loss_gen_part(x)
+            classifier_logits = classifier(x)
+            p_cxs = torch.softmax(classifier_logits, dim=1)
+            loss_part_1 = torch.sum(torch.tensor([p_cxs[i]*torch.log(p_cxs[i]/0.1) for i in range(10)]))
+            loss_part_2 = torch.sum(torch.tensor([p_cxs[i]*torch.log(p_x/p_xcs[i]) for i in range(10)]))
+
+            loss = loss_part_1 + loss_part_2
+        else:
+            log_px = model.log_prob(x, y)
+            loss = - log_px.mean()
         loss_reg = model.gather_regularization()
         total_loss = loss + 0.01 * loss_reg
         total_loss.backward()

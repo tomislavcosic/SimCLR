@@ -14,7 +14,7 @@ class NormalizingFlow(nn.Module):
 
         self.register_buffer('loc', torch.zeros(num_classes, input_dim).to(device))
         self.register_buffer('scale_tril', torch.eye(input_dim).unsqueeze(0).expand(num_classes, -1, -1).to(device))
-        self.base_dist = nf.distributions.ClassCondDiagGaussian(512, 10)
+        self.base_dist = nf.distributions.ClassCondDiagGaussian(512, 10, )
 
     def forward_kld(self, x, y=None):
         """Estimates forward KL divergence, see see [arXiv 1912.02762](https://arxiv.org/abs/1912.02762)
@@ -88,6 +88,16 @@ class NormalizingFlow(nn.Module):
         log_pz = self.base_dist.log_prob(z, y)
         log_px = log_pz.to("cuda") + log_abs_det
         return log_px
+
+    def hybrid_loss_gen_part(self, x, num_classes=10):
+        batch_size = x.size(0)
+        p_x = torch.zeros(batch_size, 1)
+        p_xcs = torch.zeros(batch_size, num_classes)
+        for c in range(num_classes):
+            p_xc_current = torch.exp(self.log_prob(x, c))
+            p_x += p_xc_current.view(-1, 1)
+            p_xcs[:, c] = p_xc_current
+        return p_x.view(-1), p_xcs
 
     def sample(self, num_samples, T=1):
         """Generates new samples from the normalizing flow.
