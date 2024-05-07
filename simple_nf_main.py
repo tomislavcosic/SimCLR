@@ -33,7 +33,7 @@ def train(args, loader, model, optimizer):
             loss_part_1 = sum(p_cxs[i] * torch.log(p_cxs[i] / 0.1) for i in range(10))
             loss_part_2 = sum(p_cxs[i] * torch.log(p_x / p_xcs[i]) for i in range(10))
 
-            loss = torch.tensor(loss_part_1 + loss_part_2, device=args.device)
+            loss = torch.tensor(loss_part_1 + loss_part_2, device=args.device).mean()
         else:
             log_px = model.log_prob(x, y)
             loss = - log_px.mean()
