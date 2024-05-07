@@ -26,14 +26,14 @@ def train(args, loader, model, optimizer):
 
         if args.simple_nf_loss == "hybrid":
             p_x, p_xcs = model.hybrid_loss_gen_part(x)
-            p_xcs = torch.transpose(p_xcs, 0, 1)
+            p_xcs = p_xcs.t()  # Transpose tensor
             classifier_logits = classifier(x)
-            p_cxs = torch.softmax(classifier_logits, dim=1)
-            p_cxs = torch.transpose(p_cxs, 0, 1)
-            loss_part_1 = sum(p_cxs[i] * torch.log(p_cxs[i] / 0.1) for i in range(10))
-            loss_part_2 = sum(p_cxs[i] * torch.log(p_x / p_xcs[i]) for i in range(10))
+            p_cxs = torch.nn.functional.softmax(classifier_logits, dim=1)
+            p_cxs = p_cxs.t()  # Transpose tensor
+            loss_part_1 = torch.sum(p_cxs * torch.log(p_cxs / 0.1), dim=1).mean()
+            loss_part_2 = torch.sum(p_cxs * torch.log(p_x.view(-1, 1) / p_xcs), dim=1).mean()
 
-            loss = torch.tensor(loss_part_1 + loss_part_2, device=args.device).mean()
+            loss = loss_part_1 + loss_part_2
         else:
             log_px = model.log_prob(x, y)
             loss = - log_px.mean()
