@@ -31,7 +31,7 @@ def train(args, loader, model, optimizer):
             p_cxs = torch.nn.functional.softmax(classifier_logits, dim=1)
             p_cxs = p_cxs.t()  # Transpose tensor
             loss_part_1 = torch.sum(p_cxs * torch.log(p_cxs / 0.1), dim=1).mean()
-            loss_part_2 = torch.sum(p_cxs * torch.log(p_x.view(-1, 1) / p_xcs), dim=1).mean()
+            loss_part_2 = torch.sum(p_cxs * torch.log(p_x / p_xcs), dim=1).mean()
 
             loss = loss_part_1 + loss_part_2
         else:
