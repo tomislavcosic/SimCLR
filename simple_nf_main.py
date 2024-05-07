@@ -25,11 +25,12 @@ def train(args, loader, model, optimizer):
         y = y.to(args.device)
 
         if args.simple_nf_loss == "hybrid":
-            p_x, p_xcs = model.hybrid_loss_gen_part(x)
-            p_xcs = p_xcs.t()  # Transpose tensor
+            p_x, p_xcs = model.hybrid_loss_gen_part(x) #NX1
+            p_xcs = p_xcs.t()  # CxN
             classifier_logits = classifier(x)
             p_cxs = torch.nn.functional.softmax(classifier_logits, dim=1)
-            p_cxs = p_cxs.t()  # Transpose tensor
+            p_cxs = p_cxs.t()  # CxN
+            print(p_x.shape, p_xcs.shape, p_cxs.shape)
             loss_part_1 = torch.sum(p_cxs * torch.log(p_cxs / 0.1), dim=1).mean()
             loss_part_2 = torch.sum(p_cxs * torch.log(p_x / p_xcs), dim=1).mean()
 
