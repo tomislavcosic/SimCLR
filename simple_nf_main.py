@@ -29,6 +29,7 @@ def train(args, loader, model, optimizer):
             p_xcs = torch.transpose(p_xcs, 0, 1)
             classifier_logits = classifier(x)
             p_cxs = torch.softmax(classifier_logits, dim=1)
+            p_cxs = torch.transpose(p_cxs, 0, 1)
             loss_part_1 = sum(p_cxs[i] * torch.log(p_cxs[i] / 0.1) for i in range(10))
             loss_part_2 = sum(p_cxs[i] * torch.log(p_x / p_xcs[i]) for i in range(10))
 
