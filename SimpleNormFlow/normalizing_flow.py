@@ -91,8 +91,8 @@ class NormalizingFlow(nn.Module):
 
     def hybrid_loss_gen_part(self, x, num_classes=10):
         batch_size = x.size(0)
-        p_x = torch.zeros(batch_size, 1)
-        p_xcs = torch.zeros(batch_size, num_classes)
+        p_x = torch.zeros(batch_size, 1, device="cuda")
+        p_xcs = torch.zeros(batch_size, num_classes, device="cuda")
         for c in range(num_classes):
             p_xc_current = torch.exp(self.log_prob(x, torch.tensor(c, device="cuda").expand(batch_size)))
             p_x += p_xc_current.view(-1, 1)
