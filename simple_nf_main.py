@@ -26,6 +26,7 @@ def train(args, loader, model, optimizer):
 
         if args.simple_nf_loss == "hybrid":
             p_x, p_xcs = model.hybrid_loss_gen_part(x)
+            p_xcs = torch.transpose(p_xcs, 0, 1)
             classifier_logits = classifier(x)
             p_cxs = torch.softmax(classifier_logits, dim=1)
             loss_part_1 = sum(p_cxs[i] * torch.log(p_cxs[i] / 0.1) for i in range(10))
