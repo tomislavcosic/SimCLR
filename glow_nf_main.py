@@ -39,7 +39,7 @@ if __name__ == '__main__':
     n_dims = np.prod(input_shape)
     channels = 1
     hidden_channels = 256
-    split_mode = 'channel'
+    split_mode = 'checkerboard'
     scale = True
     num_classes = 10
 
