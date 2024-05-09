@@ -35,7 +35,7 @@ if __name__ == '__main__':
     K = 16
     torch.manual_seed(0)
 
-    input_shape = (1, 512)
+    input_shape = [512]
     n_dims = np.prod(input_shape)
     channels = 1
     hidden_channels = 256
@@ -56,11 +56,9 @@ if __name__ == '__main__':
         flows += [flows_]
         if i > 0:
             merges += [nf.flows.Merge()]
-            latent_shape = (input_shape[0] * 2 ** (L - i), input_shape[1] // 2 ** (L - i),
-                            input_shape[2] // 2 ** (L - i))
+            latent_shape = (input_shape[0] * 2 ** (L - i))
         else:
-            latent_shape = (input_shape[0] * 2 ** (L + 1), input_shape[1] // 2 ** L,
-                            input_shape[2] // 2 ** L)
+            latent_shape = (input_shape[0] * 2 ** (L + 1))
         q0 += [nf.distributions.ClassCondDiagGaussian(latent_shape, num_classes)]
 
 
