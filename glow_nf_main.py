@@ -1,13 +1,14 @@
 import argparse
-import os
 
 import torch
-import numpy as np
-import normflows as nf
+import torch.nn as nn
+import torch.optim as optim
+import normflows
 
-from tqdm import tqdm
+import os
 
 from utils import yaml_config_hook
+
 
 def create_data_loaders_from_arrays(X_train, y_train, X_test, y_test, batch_size):
     train = torch.utils.data.TensorDataset(
@@ -26,98 +27,99 @@ def create_data_loaders_from_arrays(X_train, y_train, X_test, y_test, batch_size
     return train_loader, test_loader
 
 
-if __name__ == '__main__':
-
-    # Set up model
-
-    # Define flows
-    L = 3
-    K = 16
-    torch.manual_seed(0)
-
-    input_shape = [512]
-    n_dims = np.prod(input_shape)
-    channels = 1
-    hidden_channels = 256
-    split_mode = 'channel'
-    scale = True
-    num_classes = 10
-
-    # Set up flows, distributions and merge operations
-    q0 = []
-    merges = []
-    flows = []
-    for i in range(L):
-        flows_ = []
-        for j in range(K):
-            flows_ += [nf.flows.GlowBlock(channels * 2 ** (L + 1 - i), hidden_channels,
-                                         split_mode=split_mode, scale=scale)]
-        flows_ += [nf.flows.Squeeze()]
-        flows += [flows_]
-        if i > 0:
-            merges += [nf.flows.Merge()]
-            latent_shape = (input_shape[0] * 2 ** (L - i))
-        else:
-            latent_shape = (input_shape[0] * 2 ** (L + 1))
-        q0 += [nf.distributions.ClassCondDiagGaussian(latent_shape, num_classes)]
 
 
-    # Construct flow model with the multiscale architecture
-    model = nf.MultiscaleFlow(q0, flows, merges)
+class ClassConditionedNormalizingFlow(nn.Module):
+    def __init__(self, num_classes, input_size, flow_depth=8, hidden_size=64):
+        super(ClassConditionedNormalizingFlow, self).__init__()
+        self.num_classes = num_classes
+        self.input_size = input_size
+        self.flow_depth = flow_depth
+        self.hidden_size = hidden_size
 
-    # Move model on GPU if available
-    enable_cuda = True
-    device = torch.device('cuda' if torch.cuda.is_available() and enable_cuda else 'cpu')
-    model = model.to(device)
+        self.embedding = nn.Embedding(num_classes, hidden_size)
+        flows = []
+        for _ in range(flow_depth):
+            flows.append(normflows.flows.MaskedAffineFlow(input_size + hidden_size))
+        self.flow = normflows.NormalizingFlow([normflows.distributions.ClassCondDiagGaussian(512,10)], flows)
+
+    def forward(self, x, y):
+        emb = self.embedding(y)
+        x = torch.cat([x, emb], dim=1)  # concatenate input with class embedding
+        return self.flow(x)
 
 
-    parser = argparse.ArgumentParser(description="SimCLR")
-    config = yaml_config_hook("./config/config.yaml")
-    for k, v in config.items():
-        parser.add_argument(f"--{k}", default=v, type=type(v))
-    args = parser.parse_args()
+def bits_per_dimension(loss, num_dims):
+    return loss / (num_dims * torch.log(torch.tensor(2.0)))
 
-    train_X = torch.load(os.path.join(args.feature_save_path, "train_X.pt"))
-    train_y = torch.load(os.path.join(args.feature_save_path, "train_y.pt"))
-    test_X = torch.load(os.path.join(args.feature_save_path, "test_X.pt"))
-    test_y = torch.load(os.path.join(args.feature_save_path, "test_y.pt"))
 
-    arr_train_loader, arr_test_loader = create_data_loaders_from_arrays(
-        train_X, train_y, test_X, test_y, args.logistic_batch_size
-    )
+# Example usage:
+num_classes = 10
+input_size = 128  # Adjust this according to your feature size
+flow_depth = 8
+hidden_size = 64
+model = ClassConditionedNormalizingFlow(num_classes, input_size, flow_depth, hidden_size)
 
-    train_iter = iter(arr_train_loader)
+# Define optimizer
+optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
-    # Train model
-    max_iter = 20000
+# Define loss function (you might need to define your own based on your task)
+criterion = nn.MSELoss()
 
-    loss_hist = np.array([])
 
-    optimizer = torch.optim.Adamax(model.parameters(), lr=1e-3, weight_decay=1e-5)
-
-    for i in tqdm(range(max_iter)):
-        try:
-            x, y = next(train_iter)
-        except StopIteration:
-            train_iter = iter(arr_train_loader)
-            x, y = next(train_iter)
-        optimizer.zero_grad()
-        loss = model.forward_kld(x.to(device), y.to(device))
-
-        if ~(torch.isnan(loss) | torch.isinf(loss)):
+# Example training loop
+def train(model, train_loader, optimizer, criterion, num_epochs):
+    model.train()
+    for epoch in range(num_epochs):
+        running_loss = 0.0
+        for inputs, labels in train_loader:
+            optimizer.zero_grad()
+            outputs = model(inputs, labels)
+            loss = criterion(outputs, inputs)  # Example loss calculation
             loss.backward()
             optimizer.step()
+            running_loss += loss.item() * inputs.size(0)
 
-        loss_hist = np.append(loss_hist, loss.detach().to('cpu').numpy())
+        epoch_loss = running_loss / len(train_loader.dataset)
+        print(f"Epoch [{epoch + 1}/{num_epochs}], Loss: {epoch_loss:.4f}")
 
-    # Get bits per dim
-    n = 0
-    bpd_cum = 0
+
+
+parser = argparse.ArgumentParser(description="SimCLR")
+config = yaml_config_hook("./config/config.yaml")
+for k, v in config.items():
+    parser.add_argument(f"--{k}", default=v, type=type(v))
+args = parser.parse_args()
+
+train_X = torch.load(os.path.join(args.feature_save_path, "train_X.pt"))
+train_y = torch.load(os.path.join(args.feature_save_path, "train_y.pt"))
+test_X = torch.load(os.path.join(args.feature_save_path, "test_X.pt"))
+test_y = torch.load(os.path.join(args.feature_save_path, "test_y.pt"))
+
+train_loader, test_loader = create_data_loaders_from_arrays(
+    train_X, train_y, test_X, test_y, args.logistic_batch_size
+)
+# Example usage of the training loop
+num_epochs = 10
+train(model, train_loader, optimizer, criterion, num_epochs)
+
+
+# Example usage of the model for inference
+def test(model, test_loader):
+    model.eval()
     with torch.no_grad():
-        for x, y in iter(arr_test_loader):
-            nll = model(x.to(device), y.to(device))
-            nll_np = nll.cpu().numpy()
-            bpd_cum += np.nansum(nll_np / np.log(2) / n_dims)
-            n += len(x) - np.sum(np.isnan(nll_np))
+        total_loss = 0.0
+        total_dims = 0
+        for inputs, labels in test_loader:
+            outputs = model(inputs, labels)
+            loss = criterion(outputs, inputs)
+            total_loss += loss.item() * inputs.size(0)
+            total_dims += inputs.size(0) * inputs.size(1)  # Number of elements in inputs
 
-        print('Bits per dim: ', bpd_cum / n)
+        avg_loss = total_loss / len(test_loader.dataset)
+        bpd = bits_per_dimension(avg_loss, total_dims)
+        print(f"Average Test Loss: {avg_loss:.4f}, Bits per Dimension: {bpd:.4f}")
+
+
+# Example usage of the test function
+test(model, test_loader)
