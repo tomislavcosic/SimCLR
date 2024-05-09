@@ -45,17 +45,15 @@ if __name__ == '__main__':
 
     # Set up flows, distributions and merge operations
     q0 = []
-    merges = []
     flows = []
     for i in range(L):
         flows_ = []
         for j in range(K):
-            flows_ += [nf.flows.GlowBlock(channels * 2 ** (L + 1 - i), hidden_channels,
-                                         split_mode=split_mode, scale=scale)]
+
+            flows_ += [nf.flows.InvertibleAffine(1)]
         flows_ += [nf.flows.Squeeze()]
         flows += [flows_]
         if i > 0:
-            merges += [nf.flows.Merge()]
             latent_shape = (input_shape[0] * 2 ** (L - i))
         else:
             latent_shape = (input_shape[0] * 2 ** (L + 1))
@@ -63,7 +61,7 @@ if __name__ == '__main__':
 
 
     # Construct flow model with the multiscale architecture
-    model = nf.MultiscaleFlow(q0, flows, merges)
+    model = nf.ClassCondFlow(q0, flows)
 
     # Move model on GPU if available
     enable_cuda = True
