@@ -44,7 +44,7 @@ if __name__ == '__main__':
     num_classes = 10
 
     # Set up flows, distributions and merge operations
-    q0 = [nf.distributions.ClassCondDiagGaussian(512, num_classes)]
+    q0 = nf.distributions.ClassCondDiagGaussian(512, num_classes)
     flows = []
     for i in range(L):
         flows.append(nf.flows.InvertibleAffine(512))
