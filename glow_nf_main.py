@@ -44,20 +44,10 @@ if __name__ == '__main__':
     num_classes = 10
 
     # Set up flows, distributions and merge operations
-    q0 = []
+    q0 = [nf.distributions.ClassCondDiagGaussian(512, num_classes)]
     flows = []
     for i in range(L):
-        flows_ = []
-        for j in range(K):
-
-            flows_ += [nf.flows.InvertibleAffine(1)]
-        flows_ += [nf.flows.Squeeze()]
-        flows += [flows_]
-        if i > 0:
-            latent_shape = (input_shape[0] * 2 ** (L - i))
-        else:
-            latent_shape = (input_shape[0] * 2 ** (L + 1))
-        q0 += [nf.distributions.ClassCondDiagGaussian(latent_shape, num_classes)]
+        flows.append(nf.flows.InvertibleAffine(1))
 
 
     # Construct flow model with the multiscale architecture
