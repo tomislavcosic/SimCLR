@@ -96,6 +96,11 @@ class NormalizingFlow(nn.Module):
         for c in range(num_classes):
             p_xc_current = torch.exp(self.log_prob(x, self.one_hot_encode(c, batch_size, num_classes)))
             p_x += p_xc_current.view(-1, 1)
+            print(f"c:{c}")
+            print("p_x")
+            print(p_x)
+            print("p_xc_current")
+            print(p_xc_current)
             p_xcs[:, c] = p_xc_current
         return p_x.view(-1), p_xcs
 
