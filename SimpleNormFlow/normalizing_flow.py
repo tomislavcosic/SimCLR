@@ -94,10 +94,26 @@ class NormalizingFlow(nn.Module):
         p_x = torch.zeros(batch_size, 1, device="cuda")
         p_xcs = torch.zeros(batch_size, num_classes, device="cuda")
         for c in range(num_classes):
-            p_xc_current = torch.exp(self.log_prob(x, torch.tensor(c, device="cuda").expand(batch_size)))
+            p_xc_current = torch.exp(self.log_prob(x, self.one_hot_encode(c, batch_size, num_classes)))
             p_x += p_xc_current.view(-1, 1)
             p_xcs[:, c] = p_xc_current
         return p_x.view(-1), p_xcs
+
+    def one_hot_encode(self, class_label, batch_size, num_classes):
+        """
+        Convert integer class label to one-hot encoded tensor.
+
+        Args:
+            class_label (int): Integer class label.
+            batch_size (int): Number of samples in the batch.
+            num_classes (int): Number of classes.
+
+        Returns:
+            torch.Tensor: One-hot encoded tensor with shape (batch_size, num_classes).
+        """
+        one_hot_labels = torch.zeros(batch_size, num_classes)
+        one_hot_labels.scatter_(1, torch.tensor([[class_label]] * batch_size), 1)
+        return one_hot_labels
 
     def sample(self, num_samples, T=1):
         """Generates new samples from the normalizing flow.
