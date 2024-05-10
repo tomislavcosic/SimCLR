@@ -111,7 +111,7 @@ class NormalizingFlow(nn.Module):
         Returns:
             torch.Tensor: One-hot encoded tensor with shape (batch_size, num_classes).
         """
-        one_hot_labels = torch.zeros(batch_size, num_classes)
+        one_hot_labels = torch.zeros(batch_size, num_classes, device="cuda")
         one_hot_labels.scatter_(1, torch.tensor([[class_label]] * batch_size), 1)
         return one_hot_labels
 
