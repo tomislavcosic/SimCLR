@@ -94,7 +94,7 @@ class NormalizingFlow(nn.Module):
         p_x = torch.zeros(batch_size, 1, device="cuda")
         p_xcs = torch.zeros(batch_size, num_classes, device="cuda")
         for c in range(num_classes):
-            p_xc_current = torch.exp(self.base_dist.log_prob(x, self.one_hot_encode(c, batch_size, num_classes)))
+            p_xc_current = torch.exp(self.log_prob(x, self.one_hot_encode(c, batch_size, num_classes)))
             p_x += p_xc_current.view(-1, 1)
             print(f"c:{c}")
             print("p_x")
