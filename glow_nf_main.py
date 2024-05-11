@@ -77,7 +77,7 @@ if __name__ == '__main__':
     train_iter = iter(arr_train_loader)
 
     # Train model
-    max_iter = 2
+    max_iter = 2000
 
     loss_hist = np.array([])
 
