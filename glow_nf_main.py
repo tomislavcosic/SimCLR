@@ -92,6 +92,9 @@ if __name__ == '__main__':
         optimizer.zero_grad()
         loss = -model.log_prob(x.to(device), y.to(device)).mean()
 
+        if i % 100 == 0:
+            print(f"Iter: {i}, loss:{loss}")
+
         if ~(torch.isnan(loss) | torch.isinf(loss)):
             loss.backward()
             optimizer.step()
