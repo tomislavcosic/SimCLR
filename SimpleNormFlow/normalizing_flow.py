@@ -41,6 +41,10 @@ class NormalizingFlow(nn.Module):
         z = x
         for transform in self.transforms:
             z, log_abs_det = transform(z)
+            print("zt")
+            print(z)
+            print("logabsdett")
+            print(log_abs_det)
             sum_log_abs_det += log_abs_det
 
         return z, sum_log_abs_det
