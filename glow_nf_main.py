@@ -33,7 +33,7 @@ if __name__ == '__main__':
     # Define flows
     L = 3
     K = 16
-    torch.manual_seed(0)
+    #torch.manual_seed(0)
 
     input_shape = [512]
     n_dims = np.prod(input_shape)
