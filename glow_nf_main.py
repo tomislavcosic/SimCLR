@@ -90,7 +90,7 @@ if __name__ == '__main__':
             train_iter = iter(arr_train_loader)
             x, y = next(train_iter)
         optimizer.zero_grad()
-        loss = model.forward_kld(x.to(device), y.to(device))
+        loss = -model.log_prob(x.to(device), y.to(device))
 
         if ~(torch.isnan(loss) | torch.isinf(loss)):
             loss.backward()
