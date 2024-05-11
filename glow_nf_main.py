@@ -77,7 +77,7 @@ if __name__ == '__main__':
     train_iter = iter(arr_train_loader)
 
     # Train model
-    max_iter = 20000
+    max_iter = 2
 
     loss_hist = np.array([])
 
@@ -103,7 +103,7 @@ if __name__ == '__main__':
     bpd_cum = 0
     with torch.no_grad():
         for x, y in iter(arr_test_loader):
-            nll = model(x.to(device), y.to(device))
+            nll = -model.log_prob(x.to(device), y.to(device))
             nll_np = nll.cpu().numpy()
             bpd_cum += np.nansum(nll_np / np.log(2) / n_dims)
             n += len(x) - np.sum(np.isnan(nll_np))
