@@ -7,6 +7,7 @@ import normflows as nf
 
 from tqdm import tqdm
 
+from simclr.modules import SimpleFCClassifier
 from utils import yaml_config_hook
 
 def create_data_loaders_from_arrays(X_train, y_train, X_test, y_test, batch_size):
@@ -24,6 +25,17 @@ def create_data_loaders_from_arrays(X_train, y_train, X_test, y_test, batch_size
         test, batch_size=batch_size, shuffle=False
     )
     return train_loader, test_loader
+
+
+def hybrid_loss_gen_part(model, x, num_classes=10):
+    batch_size = x.size(0)
+    p_x = torch.zeros(batch_size, 1, device="cuda")
+    p_xcs = torch.zeros(batch_size, num_classes, device="cuda")
+    for c in range(num_classes):
+        p_xc_current = torch.exp(model.log_prob(x, c))
+        p_x += torch.sum(p_xc_current, dim=1)
+        p_xcs[:, c] = p_xc_current
+    return p_x.view(-1), p_xcs
 
 
 if __name__ == '__main__':
@@ -83,6 +95,14 @@ if __name__ == '__main__':
 
     optimizer = torch.optim.Adamax(model.parameters(), lr=1e-3, weight_decay=1e-5)
 
+    if args.simple_nf_loss == "hybrid":
+        print("USING HYBRID LOSS!")
+        classifier = SimpleFCClassifier(512, 10)
+        classifier.load_state_dict(
+            torch.load(os.path.join(args.model_path, "classifier_weights.tar"), device))
+        classifier = classifier.to(device)
+        classifier.eval()
+
     for i in tqdm(range(max_iter)):
         try:
             x, y = next(train_iter)
@@ -90,7 +110,18 @@ if __name__ == '__main__':
             train_iter = iter(arr_train_loader)
             x, y = next(train_iter)
         optimizer.zero_grad()
-        loss = -model.log_prob(x.to(device), y.to(device)).mean()
+
+        if args.simple_nf_loss == "hybrid":
+            classifier_logits = classifier(x)
+            p_cxs = torch.nn.functional.softmax(classifier_logits, dim=1)  # p_cxs: NxC
+            p_x, p_xcs = hybrid_loss_gen_part(model, x)  # p_x: Nx1, p_xcs: NxC
+            loss = torch.zeros(x.size(dim=0), device=device)
+            for c in range(num_classes):
+                p_cx = p_cxs[:, c] #Nx1, p(c|x) za sve x-eve i c-tu klasu
+                p_xc = p_xcs[:, c] #Nx1, p(x|c) za sve x-eve i c-tu klasu
+                loss += torch.mean(p_cx*torch.log((p_cx*p_x)/(p_xc*(1/num_classes))))
+        else:
+            loss = -model.log_prob(x.to(device), y.to(device)).mean()
 
         if i % 100 == 0:
             print(f"Iter: {i}, loss:{loss}")
