@@ -228,4 +228,4 @@ if __name__ == "__main__":
         f"[FINAL]\t Loss: {loss_epoch / len(arr_test_loader)}\t Accuracy: {accuracy_epoch / len(arr_test_loader)}"
     )
 
-    torch.save(best_model_params, args.model_path+"classifier_weights.tar")
+    torch.save(best_model_params, args.model_path+"classifier_weights_2.tar")
