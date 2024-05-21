@@ -75,7 +75,7 @@ if __name__ == '__main__':
     simclr_model.eval()
 
     (train_X, train_y, test_X, test_y) = get_features(simclr_model, train_loader, test_loader, args.device)
-    torch.save(train_X, os.path.join(args.feature_save_path, "train_X.pt"))
-    torch.save(train_y, os.path.join(args.feature_save_path, "train_y.pt"))
-    torch.save(test_X, os.path.join(args.feature_save_path, "test_X.pt"))
-    torch.save(test_y, os.path.join(args.feature_save_path, "test_y.pt"))
+    torch.save(train_X, os.path.join(args.feature_save_path, "train_X_2.pt"))
+    torch.save(train_y, os.path.join(args.feature_save_path, "train_y_2.pt"))
+    torch.save(test_X, os.path.join(args.feature_save_path, "test_X_2.pt"))
+    torch.save(test_y, os.path.join(args.feature_save_path, "test_y_2.pt"))
