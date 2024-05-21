@@ -71,7 +71,6 @@ if __name__ == '__main__':
     simclr_model = SimCLR(encoder, args.projection_dim, n_features)
     model_fp = os.path.join(args.model_path, "checkpoint_{}.tar".format(args.epoch_num))
     simclr_model.load_state_dict(torch.load(model_fp, map_location=args.device.type))
-    simclr_model.projector = torch.nn.Sequential(*[simclr_model.projector[0], simclr_model.projector[2]])
     simclr_model = simclr_model.to(args.device)
     simclr_model.eval()
 
