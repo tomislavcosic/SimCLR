@@ -191,11 +191,12 @@ if __name__ == "__main__":
 
     print("### Loading features ###")
     model_fp = os.path.join(args.model_path, "checkpoint_{}.tar".format(args.epoch_num))
-    train_X = torch.load(os.path.join(args.model_path, "train_X.pt"), args.device.type)
-    train_y = torch.load(os.path.join(args.model_path, "train_y.pt"), args.device.type)
-    test_X = torch.load(os.path.join(args.model_path, "test_X.pt"), args.device.type)
-    test_y = torch.load(os.path.join(args.model_path, "test_y.pt"), args.device.type)
+    train_X = torch.load(os.path.join(args.model_path, "train_X_2.pt"), args.device.type)
+    train_y = torch.load(os.path.join(args.model_path, "train_y_2.pt"), args.device.type)
+    test_X = torch.load(os.path.join(args.model_path, "test_X_2.pt"), args.device.type)
+    test_y = torch.load(os.path.join(args.model_path, "test_y_2.pt"), args.device.type)
 
+    print(torch.min(train_X), torch.max(train_X), torch.mean(train_X))
     arr_train_loader, arr_test_loader = create_data_loaders_from_arrays(
         train_X, train_y, test_X, test_y, args.logistic_batch_size
     )
