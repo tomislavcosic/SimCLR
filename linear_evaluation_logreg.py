@@ -170,7 +170,7 @@ if __name__ == "__main__":
         num_workers=args.workers,
     )
 
-    encoder = get_resnet(args.resnet, pretrained=False)
+    encoder = get_resnet(args.resnet, pretrained=True)
     n_features = encoder.fc.in_features  # get dimensions of fc layer
 
     # load pre-trained model from checkpoint
