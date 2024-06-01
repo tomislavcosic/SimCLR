@@ -69,7 +69,7 @@ if __name__ == '__main__':
     encoder = torchvision.models.resnet18()
     encoder.fc = Identity()
     encoder.relu = LeakyReLU()
-    n_features = encoder.fc.in_features  # get dimensions of fc layer
+    n_features = 512  # get dimensions of fc layer
 
     # load pre-trained model from checkpoint
     simclr_model = SimCLR(encoder, args.projection_dim, n_features)
