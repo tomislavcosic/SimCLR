@@ -6,6 +6,7 @@ import torchvision
 from linear_evaluation import get_features
 from simclr import SimCLR
 from simclr.modules import get_resnet
+from simclr.modules.identity import Identity
 from simclr.modules.transformations import TransformsSimCLR
 from utils import yaml_config_hook
 
@@ -64,7 +65,9 @@ if __name__ == '__main__':
         num_workers=args.workers,
     )
 
-    encoder = get_resnet(args.resnet, pretrained=False)
+    encoder = torchvision.models.resnet18()
+    encoder.fc = Identity()
+    encoder.relu = torch.nn.functional.leaky_relu
     n_features = encoder.fc.in_features  # get dimensions of fc layer
 
     # load pre-trained model from checkpoint
