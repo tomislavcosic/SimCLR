@@ -193,6 +193,11 @@ if __name__ == "__main__":
         simclr_model, train_loader, test_loader, args.device
     )
 
+    index = np.random.choice(train_X.shape[0], 1000, replace=False)
+    sample = train_X[index]
+    print("### Feature sample stats ###")
+    print(sample.min(), sample.max(), sample.mean())
+
     arr_train_loader, arr_test_loader = create_data_loaders_from_arrays(
         train_X, train_y, test_X, test_y, args.logistic_batch_size
     )
