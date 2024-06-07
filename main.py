@@ -20,6 +20,7 @@ from simclr.modules.transformations import TransformsSimCLR
 from simclr.modules.sync_batchnorm import convert_model
 
 from model import load_optimizer, save_model
+from simclr.modules.transformations.simclr import SimpleTransformsSimCLR
 from utils import yaml_config_hook
 
 
@@ -74,7 +75,7 @@ def main(gpu, args):
         train_dataset = torchvision.datasets.CIFAR10(
             args.dataset_dir,
             download=True,
-            #transform=TransformsSimCLR(size=args.image_size),
+            transform=SimpleTransformsSimCLR(size=args.image_size),
         )
     else:
         raise NotImplementedError
