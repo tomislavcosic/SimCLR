@@ -97,7 +97,7 @@ def main(gpu, args):
 
     # initialize ResNet
     encoder = resnet_v2.PreActResNet18()
-    n_features = 512  # get dimensions of fc layer
+    n_features = encoder.fc.in_features  # get dimensions of fc layer
 
     # initialize model
     model = SimCLR(encoder, args.projection_dim, n_features)
