@@ -41,10 +41,6 @@ class NormalizingFlow(nn.Module):
         z = x
         for transform in self.transforms:
             z, log_abs_det = transform(z)
-            print("zt")
-            print(z)
-            print("logabsdett")
-            print(log_abs_det)
             sum_log_abs_det += log_abs_det
 
         return z, sum_log_abs_det
@@ -90,11 +86,6 @@ class NormalizingFlow(nn.Module):
         """
         z, log_abs_det = self.forward_and_log_det(x)
         log_pz = self.base_dist.log_prob(z, y)
-        print(f"y:{y}")
-        print("logabsdet")
-        print(log_abs_det)
-        print("log_pz")
-        print(log_pz)
         log_px = log_pz.to("cuda") + log_abs_det
         return log_px
 

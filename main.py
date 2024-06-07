@@ -15,7 +15,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 # SimCLR
 from simclr import SimCLR
-from simclr.modules import NT_Xent, get_resnet
+from simclr.modules import NT_Xent, resnet_v2
 from simclr.modules.transformations import TransformsSimCLR
 from simclr.modules.sync_batchnorm import convert_model
 
@@ -96,14 +96,14 @@ def main(gpu, args):
     )
 
     # initialize ResNet
-    encoder = get_resnet(args.resnet, pretrained=False)
-    n_features = encoder.fc.in_features  # get dimensions of fc layer
+    encoder = resnet_v2.PreActResNet18()
+    n_features = 512  # get dimensions of fc layer
 
     # initialize model
     model = SimCLR(encoder, args.projection_dim, n_features)
     if args.reload:
         model_fp = os.path.join(
-            args.model_path, "checkpoint_{}.tar".format(args.epoch_num)
+            args.model_path, "checkpoint_{}_new_resnet.tar".format(args.epoch_num)
         )
         model.load_state_dict(torch.load(model_fp, map_location=args.device.type))
     model = model.to(args.device)
