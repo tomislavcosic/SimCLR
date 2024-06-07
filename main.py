@@ -74,7 +74,7 @@ def main(gpu, args):
         train_dataset = torchvision.datasets.CIFAR10(
             args.dataset_dir,
             download=True,
-            transform=TransformsSimCLR(size=args.image_size),
+            #transform=TransformsSimCLR(size=args.image_size),
         )
     else:
         raise NotImplementedError
