@@ -93,6 +93,7 @@ class PreActResNet(nn.Module):
         out = F.avg_pool2d(out, 4)
         out = out.view(out.size(0), -1)
         out = self.fc(out)
+        print(out.shape)
         return out
 
 
