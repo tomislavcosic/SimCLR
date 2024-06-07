@@ -1,5 +1,7 @@
+import torch
 import torch.nn as nn
 import torchvision
+from torch.nn import LeakyReLU
 
 from simclr.modules.resnet_hacks import modify_resnet_model
 from simclr.modules.identity import Identity
@@ -16,13 +18,12 @@ class SimCLR(nn.Module):
         self.encoder = encoder
         self.n_features = n_features
 
-        # Replace the fc layer with an Identity function
-        self.encoder.fc = Identity()
+        # Replace the fc layer with an Identity functio
 
         # We use a MLP with one hidden layer to obtain z_i = g(h_i) = W(2)σ(W(1)h_i) where σ is a ReLU non-linearity.
         self.projector = nn.Sequential(
             nn.Linear(self.n_features, self.n_features, bias=False),
-            Identity(),
+            nn.ReLU(),
             nn.Linear(self.n_features, projection_dim, bias=False),
         )
 
