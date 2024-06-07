@@ -8,8 +8,8 @@ dataset_dir: "./datasets"
 
 # train options
 seed: 42 # sacred handles automatic seeding when passed in the config
-batch_size: 12
-image_size: 224
+batch_size: 64
+image_size: 32
 start_epoch: 0
 epochs: 50
 dataset: "CIFAR10" # STL10
