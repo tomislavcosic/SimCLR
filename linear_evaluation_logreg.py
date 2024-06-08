@@ -7,9 +7,10 @@ import torchvision.transforms as transforms
 import numpy as np
 
 from simclr import SimCLR
-from simclr.modules import SimpleFCClassifier, get_resnet, LogisticRegression
+from simclr.modules import SimpleFCClassifier, get_resnet, LogisticRegression, resnet_v2
 from simclr.modules.transformations import TransformsSimCLR
 from model import save_model
+from simclr.modules.transformations.simclr import SimpleTransformsSimCLR
 
 from utils import yaml_config_hook
 
@@ -143,13 +144,13 @@ if __name__ == "__main__":
             args.dataset_dir,
             train=True,
             download=True,
-            transform=TransformsSimCLR(size=args.image_size).test_transform,
+            transform=SimpleTransformsSimCLR(size=args.image_size).test_transform,
         )
         test_dataset = torchvision.datasets.CIFAR10(
             args.dataset_dir,
             train=False,
             download=True,
-            transform=TransformsSimCLR(size=args.image_size).test_transform,
+            transform=SimpleTransformsSimCLR(size=args.image_size).test_transform,
         )
     else:
         raise NotImplementedError
@@ -170,12 +171,12 @@ if __name__ == "__main__":
         num_workers=args.workers,
     )
 
-    encoder = get_resnet(args.resnet, pretrained=True)
+    encoder = resnet_v2.PreActResNet18()
     n_features = encoder.fc.in_features  # get dimensions of fc layer
 
     # load pre-trained model from checkpoint
     simclr_model = SimCLR(encoder, args.projection_dim, n_features)
-    model_fp = os.path.join(args.model_path, "checkpoint_{}.tar".format(args.epoch_num))
+    model_fp = os.path.join(args.model_path, "checkpoint_50_no_pretraining.tar".format(args.epoch_num))
     simclr_model.load_state_dict(torch.load(model_fp, map_location=args.device.type))
     simclr_model = simclr_model.to(args.device)
     simclr_model.eval()
@@ -233,4 +234,4 @@ if __name__ == "__main__":
         f"[FINAL]\t Loss: {loss_epoch / len(arr_test_loader)}\t Accuracy: {accuracy_epoch / len(arr_test_loader)}"
     )
 
-    torch.save(best_model_params, args.model_path+"/classifier_weights_logreg.tar")
+    torch.save(best_model_params, args.model_path+"/classifier_weights_logreg_new_resnet.tar")
