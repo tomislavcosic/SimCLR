@@ -46,7 +46,7 @@ class TransformsSimCLR:
         )
         self.train_transform = torchvision.transforms.Compose(
             [
-                torchvision.transforms.RandomResizedCrop(size=size),
+                #torchvision.transforms.RandomResizedCrop(size=size),
                 torchvision.transforms.RandomHorizontalFlip(),  # with 0.5 probability
                 torchvision.transforms.RandomApply([color_jitter], p=0.8),
                 torchvision.transforms.RandomGrayscale(p=0.2),
