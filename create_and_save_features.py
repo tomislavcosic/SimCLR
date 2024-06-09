@@ -5,7 +5,7 @@ import torchvision
 
 from linear_evaluation import get_features
 from simclr import SimCLR
-from simclr.modules import get_resnet
+from simclr.modules import get_resnet, resnet_v2
 from simclr.modules.identity import Identity
 from simclr.modules.leaky_relu import LeakyReLU
 from simclr.modules.transformations import TransformsSimCLR
@@ -66,14 +66,12 @@ if __name__ == '__main__':
         num_workers=args.workers,
     )
 
-    encoder = torchvision.models.resnet18()
-    encoder.fc = Identity()
-    encoder.relu = LeakyReLU()
+    encoder = resnet_v2.PreActResNet18()
     n_features = 512  # get dimensions of fc layer
 
     # load pre-trained model from checkpoint
     simclr_model = SimCLR(encoder, args.projection_dim, n_features)
-    model_fp = os.path.join(args.model_path, "checkpoint_{}.tar".format(args.epoch_num))
+    model_fp = os.path.join(args.model_path, "checkpoint_50_no_pretraining.tar".format(args.epoch_num))
     simclr_model.load_state_dict(torch.load(model_fp, map_location=args.device.type))
     simclr_model = simclr_model.to(args.device)
     simclr_model.eval()
