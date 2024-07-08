@@ -98,4 +98,4 @@ if __name__ == '__main__':
         simclr_model, test_loader, args.device
     )
 
-    tsne_and_save_as_image(X, y, os.path.join(args.tsne_image_output_path, "tsne.png"))
+    tsne_and_save_as_image(X, y, os.path.join(args.pca_image_output_path, "tsne.png"))
